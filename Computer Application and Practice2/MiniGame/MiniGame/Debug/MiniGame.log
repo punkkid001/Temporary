@@ -1,0 +1,6 @@
+﻿  main.cpp
+c:\users\konkuk\documents\test\testrepo\minigame\minigame\main.cpp(17): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
+  KeyEvent.cpp
+  코드를 생성하고 있습니다...
+  MiniGame.vcxproj -> C:\Users\KONKUK\Documents\test\TestRepo\MiniGame\Debug\MiniGame.exe
+  MiniGame.vcxproj -> C:\Users\KONKUK\Documents\test\TestRepo\MiniGame\Debug\MiniGame.pdb (Full PDB)

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#fffff852"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+
+    <TextView
+            android:text="Memory Game"
+            android:textSize="20pt"
+            android:textStyle="bold"
+            android:textColor="#ff010001"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <TextView
+            android:id="@+id/memText"
+            android:text="Memory this!"
+            android:textSize="15pt"
+            android:textColor="#ff010001"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <TextView
+            android:id="@+id/countDown"
+            android:textSize="17pt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <TextView
+            android:id="@+id/randomText"
+            android:textSize="14pt"
+            android:textColor="#ff945cec"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <EditText
+            android:id="@+id/inputText"
+            android:textSize="12pt"
+            android:textStyle="italic"
+            android:layout_width="250dp"
+            android:layout_height="50dp"/>
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+    >
+
+        <Button
+                android:id="@+id/startBtn"
+                android:text="Start"
+                android:textSize="10pt"
+                android:textStyle="bold"
+                android:layout_width="100dp"
+                android:layout_height="70dp"
+                android:gravity="center"/>
+
+        <Button
+                android:id="@+id/quitBtn"
+                android:text="Quit"
+                android:textSize="10pt"
+                android:textStyle="bold"
+                android:layout_width="100dp"
+                android:layout_height="70dp"
+                android:gravity="center"/>
+    </LinearLayout>
+</LinearLayout>
+

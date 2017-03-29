@@ -1,0 +1,6 @@
+touch a
+
+gcc a.c -c
+gcc b.c -c
+gcc a.o b.o
+./a.out

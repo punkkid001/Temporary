@@ -11,12 +11,6 @@ class ErrorControlServer
         ServerSocket server_s;
         Socket socket;
 
-        InputStream in;
-        DataInputStream d_in;
-        OutputStream out;
-        DataOutputStream d_out;
-        DataOutputStream d_file_out;
-
         String name, ip = "127.0.0.1";
         int selection = 0, port = 0;
 
@@ -48,14 +42,20 @@ class ErrorControlServer
 
         socket=server_s.accept();
         System.out.println("Connect!");
-        
-        in=socket.getInputStream();
-        d_in=new DataInputStream(in);
-        out=socket.getOutputStream();
-        d_out=new DataOutputStream(out);
-        d_file_out=new DataOutputStream(out);
 
-        FileInputStream f_in=new FileInputStream(name);
+        server_s.close();
+        socket.close();
+    }
+
+    public static void stop_and_wait(Socket send, String file_name)
+    {
+        InputStream in = send.getInputStream();
+        DataInputStream d_in = new DataInputStream(in);
+        OutputStream out = send.getOutputStream();
+        DataOutputStream d_out = new DataOutputStream(out);
+        DataOutputStream d_file_out = new DataOutputStream(out);
+
+        FileInputStream f_in = new FileInputStream(file_name);
         System.out.println("Transmitting ..");
         
         while(true)
@@ -66,13 +66,12 @@ class ErrorControlServer
                 break;
             }
             d_out.write(data);
+            System.out.print(data);
         }
 
         System.out.println("Done!");
 
         //Closing Socket
-        server_s.close();
-        socket.close();
         in.close();
         d_in.close();
         out.close();
@@ -80,13 +79,35 @@ class ErrorControlServer
         f_in.close();
     }
 
-    public static void stop_and_wait()
+    public static void go_back_n(Socket send, String file_name)
     {
+        InputStream in = send.getInputStream();
+        DataInputStream d_in = new DataInputStream(in);
+        OutputStream out = send.getOutputStream();
+        DataOutputStream d_out = new DataOutputStream(out);
+        DataOutputStream d_file_out = new DataOutputStream(out);
 
-    }
+        FileInputStream f_in = new FileInputStream(file_name);
+        System.out.println("Transmitting ..");
+        
+        while(true)
+        {
+            int data=f_in.read();
+            if(data==-1)
+            {
+                break;
+            }
+            d_out.write(data);
+            System.out.print(data);
+        }
 
-    public static void go_back_n()
-    {
+        System.out.println("Done!");
 
+        //Closing Socket
+        in.close();
+        d_in.close();
+        out.close();
+        d_out.close();
+        f_in.close();
     }
 }

@@ -8,11 +8,6 @@ class ErrorControlClient
     {
         Scanner input = new Scanner(System.in);
         Socket socket;
-        
-        InputStream in;
-        DataInputStream d_in;
-        OutputStream out;
-        DataOutputStream d_out;
 
         String ip = "127.0.0.1";
         int selection = 0, port = 0;
@@ -41,15 +36,20 @@ class ErrorControlClient
         System.out.println("Connect!");
         System.out.println();
 
-        in=socket.getInputStream();
-        d_in=new DataInputStream(in);
-        out=socket.getOutputStream();
-        d_out=new DataOutputStream(out);
+        socket.close();
+    }
 
-        BufferedOutputStream bos=new BufferedOutputStream(socket.getOutputStream());
-        DataOutputStream dos=new DataOutputStream(bos);
+    public static void stop_and_wait(Socket receive)
+    {
+        InputStream in = receive.getInputStream();
+        DataInputStream d_in = new DataInputStream(in);
+        OutputStream out = receive.getOutputStream();
+        DataOutputStream d_out = new DataOutputStream(out);
 
-        FileOutputStream f_out=new FileOutputStream("result");
+        BufferedOutputStream bos = new BufferedOutputStream(receive.getOutputStream());
+        DataOutputStream dos = new DataOutputStream(bos);
+        FileOutputStream f_out = new FileOutputStream("result");
+
         while(true)
         {
             int data=d_in.read();
@@ -58,12 +58,12 @@ class ErrorControlClient
                 break;
             }
             f_out.write(data);
+            System.out.print(data);
         }
 
         System.out.println("Done!");
 
         //Closing socket
-        socket.close();
         in.close();
         d_in.close();
         out.close();
@@ -71,13 +71,35 @@ class ErrorControlClient
         f_out.close();
     }
 
-    public static void stop_and_wait()
+    public static void go_back_n(Socket receive)
     {
+        InputStream in = receive.getInputStream();
+        DataInputStream d_in = new DataInputStream(in);
+        OutputStream out = receive.getOutputStream();
+        DataOutputStream d_out = new DataOutputStream(out);
 
-    }
+        BufferedOutputStream bos = new BufferedOutputStream(receive.getOutputStream());
+        DataOutputStream dos = new DataOutputStream(bos);
+        FileOutputStream f_out = new FileOutputStream("result");
 
-    public static void go_back_n()
-    {
+        while(true)
+        {
+            int data=d_in.read();
+            if(data==-1)
+            {
+                break;
+            }
+            f_out.write(data);
+            System.out.print(data);
+        }
 
+        System.out.println("Done!");
+
+        //Closing socket
+        in.close();
+        d_in.close();
+        out.close();
+        d_out.close();
+        f_out.close();
     }
 }

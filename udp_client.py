@@ -37,6 +37,8 @@ def stop_and_wait():
                     client.sendto(msg, (host, port))
 
             print(str(reply.decode('utf-8')))
+            if str(reply.decode('utf-8')) == 'NAK':
+                print('== Re-Send == : ' + str(msg.decode('utf-8')))
         except Exception as e:
             print(e)
             print('Fail - cannot send message')

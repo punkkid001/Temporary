@@ -1,3 +1,4 @@
+import random
 import time
 import socket
 
@@ -13,6 +14,7 @@ host = 'localhost'
 def stop_and_wait():
     port = 8000
     count = 1
+    error_maker = 0
 
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)   # creating socket
@@ -37,13 +39,19 @@ def stop_and_wait():
         if not data:
             break
         
-        if str(data.decode('utf-8')) != str(count):
-            reply = ('NAK').encode('utf-8')
+        error_maker = random.randint(0, 100)
+        
+        if error_maker%10==0:
+            pass
         else:
-            print(data.decode('utf-8') + 'count : ' + str(count))
-            reply = ('ACK Seq #' + data.decode('utf-8')).encode('utf-8')
-            count += 1
-        server.sendto(bytes(reply), client_addr)
+            if str(data.decode('utf-8')) != str(count):
+                reply = ('NAK').encode('utf-8')
+            else:
+                print(data.decode('utf-8') + 'count : ' + str(count))
+                reply = ('ACK Seq #' + data.decode('utf-8')).encode('utf-8')
+                count += 1
+            
+            server.sendto(bytes(reply), client_addr)
 
     server.close()
 

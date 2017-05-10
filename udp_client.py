@@ -65,8 +65,9 @@ def go_back_n():
         
         # send block
         for i in range(0, 4):
-            msg = bytes(str(data).encode('utf-8'))
-            print(data)
+            #msg = bytes(str(data).encode('utf-8'))
+            #print(data)
+            msg = bytes(input().encode('utf-8'))
             client.sendto(msg, (host, port))
             data = data + 1
         
@@ -80,12 +81,14 @@ def go_back_n():
         # resend block
         if m[:3] == 'NAK':
             resend_block = m[6:]
-            resend_data = (int(resend_block)*4) - 3
+            #resend_data = (int(resend_block)*4) - 3
+            #resend_data = bytes(input().encode('utf-8'))
             print('== Re-Send: Block '+resend_block+' ==')
             for i in range(0, 4):
-                print(resend_data)
-                client.sendto(resend_data, (host, port))
-                resend_data = resend_data + 1
+                #print(resend_data)
+                resend_data = bytes(input().encode('utf-8'))
+                client.sendto(str(resend_data).encode('utf-8'), (host, port))
+                #resend_data = resend_data + 1
 
 if __name__ == '__main__':
     print('1) Stop and Wait  2) Go back N')

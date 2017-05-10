@@ -61,6 +61,7 @@ def go_back_n():
     block_count = 1
     data_count = 0
     saver = set()
+    error_maker = 0
 
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)   # creating socket
@@ -78,27 +79,47 @@ def go_back_n():
     print('server socket bind complete')
 
     while True:
-        data_set = server.recvfrom(1024)
-        data_count = data_count + 1
-        data = data_set[0]
-        client_addr = data_set[1]
+        for i in range(0, 4):
+            data_set = server.recvfrom(1024)
+            #data_count = data_count + 1
+            data = data_set[0]
+            client_addr = data_set[1]
 
-        if not data:
-            break
+            if not data:
+                break
+            
+            error_maker = random.randint(0, 100)
 
-        saver.add(str(data.decode('utf-8')))
-        print(str(data.decode('utf-8')))
-
-        if data_count%4 == 0:
-            data_count = 0
-            if len(saver) != 4:
-                reply = ('NAK - '+data.decode('utf-8')).encode('utf-8')
+            if error_maker%10==0:
+                pass
             else:
-                print('== Receive Block: '+str(block_count)+' ==')
-                reply = ('ACK Seq #' + data.decode('utf-8')).encode('utf-8')
-                block_count = block_count + 1
+                saver.add(str(data.decode('utf-8')))
+                print(str(data.decode('utf-8')))
+
+        #if data_count%4 == 0:
+            #data_count = 0
+        if len(saver) != 4:
+            reply = ('NAK - '+str(block_count)).encode('utf-8')
             server.sendto(bytes(reply), client_addr)
-            saver.clear()
+            print('==  Resend Request ==')
+            for i in range(0, 4):
+                data_set = server.recvfrom(1024)
+                #data_count = data_count + 1
+                data = data_set[0]
+                client_addr = data_set[1]
+
+                if not data:
+                    break
+                print(str(data.decode('utf-8')))
+            print('== Receive Block: '+str(block_count)+' ==')
+            reply = ('ACK Seq #' + data.decode('utf-8')).encode('utf-8')
+            block_count = block_count + 1
+        else:
+            print('== Receive Block: '+str(block_count)+' ==')
+            reply = ('ACK Seq #' + data.decode('utf-8')).encode('utf-8')
+            block_count = block_count + 1
+        server.sendto(bytes(reply), client_addr)
+        saver.clear()
 
     server.close()
 

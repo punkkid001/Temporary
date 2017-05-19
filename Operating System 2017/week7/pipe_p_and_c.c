@@ -26,7 +26,7 @@ int main(void)
     }
     else
     {
-        int f = oepn("./fifo", O_RDONLY);
+        int f = open("./fifo", O_RDONLY);
         while(1)
         {
             if(n=read(f, buff, size))

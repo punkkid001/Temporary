@@ -13,6 +13,7 @@ int main(int argc, char **argv)
     bool isparent = true;
     mkfifo("./words", 0666);
     char buff[1024];
+    int n, cnt = 0;
 
     if(argc<2)
     {
@@ -64,6 +65,6 @@ int main(int argc, char **argv)
 
     int stat;
     //while(wait(&stat)>0);
-    printf("%d: processed %d bytes\n", getpit(), cnt);
+    printf("%d: processed %d bytes\n", getpid(), cnt);
     return 0;
 }

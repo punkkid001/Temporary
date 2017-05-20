@@ -7,11 +7,13 @@
 
 #define SIZE 100
 
+// executing command
 void exec(char cmd[])
 {
     char *argv[10] = {0, }, *t;
     int i = 0;
-    printf("[%d]token : %s\n", getpid(), cmd);
+    printf("[%d]command : %s\n", getpid(), cmd);
+    // get command token
     t = strtok(cmd, " ");
     while(t!=NULL)
     {
@@ -23,19 +25,20 @@ void exec(char cmd[])
 
 int main(void)
 {
-    pid_t parent = getpid();
+    pid_t parent = getpid();    // save parent pid
     char cmd[SIZE], *token;
     int n = read(0, cmd, SIZE), child;
     
     cmd[n] = '\0';
 
+    // get command token
     token = strtok(cmd, "+\n");
     while(token!=NULL)
     {
         child = fork();
         if(parent!=getpid())
-            exec(token);
-        waitpid(child, NULL, 0);
+            exec(token);    // executing command
+        waitpid(child, NULL, 0);    // waiting child
         token = strtok(NULL, "+\n");
     }
 

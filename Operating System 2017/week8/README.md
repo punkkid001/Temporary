@@ -19,4 +19,4 @@ top
 echo ls -l + ps -A | ./pipe_cmd
 ```
 
-위의 명령 실행시.. parent process가 각 명령별로 fork()실행하여 명령 인자 처;리
+위의 명령 실행시.. parent process가 각 명령별로 fork()실행하여 명령 인자 처리

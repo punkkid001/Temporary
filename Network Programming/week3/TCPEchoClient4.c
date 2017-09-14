@@ -2,67 +2,67 @@
 #include<stdlib.h>
 #include<string.h>
 #include<unistd.h>
-#include<sys/types.h>
+
 #include<sys/socket.h>
-#include<netinet/in.h>
 #include<arpa/inet.h>
-#include"Practical.h"
+
+#define RCVBUFSIZE 32
+
+void DieWithError(char *errorMessage);
 
 int main(int argc, char *argv[])
 {
-    if(argc<3||argc>4)
-        DieWithUserMessage("Parameter(s)", "<Server Address> <Echo Word> [<Server Port>]");
+    int sock;
+    struct sockaddr_in echoServerAddr;
+    unsigned short echoServerPort;
+    char *serverIP;
+    char *echoString;
+    char echoBuffer[RCVBUFSIZE];
+    unsigned int echoStringLength;
+    int bytesReceived, totalBytesReceived;
 
-    char *servIP = argv[1];
-    char *echoString = argv[2];
-
-    in_port_t servPort = (argc==4) ? atoi(argv[3]) : 7;
-    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-    if(sock<0)
-        DieWithSystemMessage("socket() failed");
-
-    struct sockaddr_in servAddr;
-    memset(&servAddr, 0, sizeof(servAddr));
-    servAddr.sin_family = AF_INET;
-
-    int rtnVal = inet_pton(AF_INET, servIP,  &servAddr.sin_addr.s_addr);
-
-    if(rtnVal==0)
-        DieWithSystemMessage("inet_pton() failed", "invalid address string");
-    else if(rtnVal<0)
-        DieWithsystemMessage("inet_pton() failed");
-    servAddr.sin_port = htons(servPort);
-
-    if(connect(sock, (struct sockaddr *)&servAddr, sizeof(servAddr))<0)
-        DieWithSystemMessage("connect() failed");
-
-    size_t echoStringLen = strlen(echoString);
-
-    ssize t numBytes = send(sock, echoString, echoStringLen, 0);
-    if(numBytes<0)
-        DieWithSystemMessage("send() failed");
-    else if(numBytes!=echoStringLen)
-        DieWithUserMessage("send()", "sent unexpected number of bytes");
-
-    unsigned int totalBytesRcvd = 0;
-    fputs("Received: ", stdout);
-    while(totalBytesRcvd<echoStringLen)
+    if ((argc < 3) || (argc > 4))
     {
-        char buffer[BUFSIZE];
-        numBytes = recv(sock, buffer, BUFSIZE-1, 0);
-
-        if(numBytes<0)
-            DieWithUserMessage("recv() failed");
-        else if(numBytes==0)
-            DieWithUserMessage("recv()", "connection closed prematurely");
-
-        totalBytesRcvd += numBytes;
-        buffer[numBytes] = '\0';
-        fputs(buffer, stdout);
+        fprintf(stderr, "Usage: %s <Server IP> <Echo Word> [<Echo Port>]\n", argv[0]);
+        exit(1);
     }
 
-    fputs('\n', stdout);
+    serverIP = argv[1];
+    echoString = argv[2];
+
+    if (argc == 4)
+        echoServerPort = atoi(argv[3]);
+    else
+        echoServerPort = 7;
+    
+    if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+        DieWithError("socket() failed");
+
+    memset(&echoServerAddr, 0, sizeof(echoServerAddr));
+    echoServerAddr.sin_family = AF_INET;
+    echoServerAddr.sin_addr.s_addr = inet_addr(serverIP);
+    echoServerAddr.sin_port = htons(echoServerPort);
+
+    if (connect(sock, (struct sockaddr *) &echoServerAddr, sizeof(echoServerAddr)) < 0)
+        DieWithError("connect() failed");
+
+    echoStringLength = strlen(echoString);
+
+    if (send(sock, echoString, echoStringLength, 0) != echoStringLength)
+        DieWithError("send() sent a different number of bytes than expected");
+
+    totalBytesReceived = 0;
+    printf("Received: ");
+    while (totalBytesReceived < echoStringLength)
+    {
+        if ((bytesReceived = recv(sock, echoBuffer, RCVBUFSIZE - 1, 0)) <= 0)
+            DieWithError("recv() failed or connection closed prematurely");
+        totalBytesReceived += bytesReceived;
+        echoBuffer[bytesReceived] = '\0';
+        printf(echoBuffer);
+    }
+
+    printf("\n");
     close(sock);
     exit(0);
 }

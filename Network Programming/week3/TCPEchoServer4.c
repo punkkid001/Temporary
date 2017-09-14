@@ -1,76 +1,58 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-#include<sys/types.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
-#include<arpa/inet.h>
-#include"Practical.h"
+#include<unistd.h>
 
-static const int MAXPENDING = 5;
-void HandleTCPClient(int clntSocket);
+#include<sys/socket.h>
+#include<arpa/inet.h>
+
+#define MAXPENDING 5
+
+void DieWithError(char *errorMessage);
+void HandelTCPClient(int clinetSocket);
 
 int main(int argc, char *argv[])
 {
-    if(argc!=2)
-        DieWithUserMessage("Parameter(s)", "<Server Port>");
+    int serverSocket;
+    int clientSocket;
 
-    in_port_t servPort = atoi(argv[1]);
+    struct sockaddr_in echoServerAddr;
+    struct sockaddr_in echoClientAddr;
+    
+    unsigned short echoServerPort;
+    unsigned int clientLength;
 
-    int servSock;
-    if((servSock=socket(AF_INET, SOCK_STREAM, IPPROTO_TCP))<0)
-        DieWithSystemMessage("socket() failed");
+    if (argc != 2)
+    {
+        fprintf(stderr, "Usage: %s <Server Port>\n", argv[0]);
+        exit(1);
+    }
 
-    struct sockaddr_in servAddr;
-    memset(&servAddr, 0, sizeof(servAddr));
-    servAddr.sin_family = AF_INET;
-    servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servAddr.sin_port = htons(servPort);
+    echoServerPort = atoi(argv[1]);
 
-    if(bind(servSock, (struct sockaddr*)&servAddr, sizeof(servAddr))<0)
-        DieWithSystemMessage("bind() failed");
+    if ((serverSock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+        DieWithError("socket() falied");
 
-    if(listen(servSock, MAXPENDING)<0)
-        DieWithSystemMessage("listen() failed");
+    memset(&echoServerAddr, 0, sizeof(echoServerAddr));
+    echoServerAddr.sin_family = AF_INET;
+    echoServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    echoServerAddr.sin_port = htons(echoServerPort);
+
+    if (bin(serverSock, (struct sockaddr *) &echoServerAddr, sizeof(echoServerAddr)) < 0)
+        DieWithError("bind() falied");
+
+    if (listen(serverSock, MAXPENDING) < 0)
+        DieWithError("listen() falied");
 
     while(1)
     {
-        struct sockaddr_in clntAddr;
-        socklen_t clntAddrLen = sizeof(clntAddr);
+        clientLength = sizeof(echoClientAddr);
 
-        int clntSock = accept(servSock, (struct sockaddr*)&clntAddr, &clntAddrLen);
-        if(clntSock<0)
-            DieWithSystemMessage("accept() failed");
-        
-        char clntName[INET_ADDRSTRLEN];
-        if(inet_ntop(AF_INET, &clntAddr.sin_addr.s_addr, clntName, sizeof(clntName))!=NULL)
-            printf("Handling client %s/%d\n", clntName, ntohs(clntAddr.sin_port));
-        else
-            puts("Unable to get client address");
-        HandleTCPClient(clntSock);
+        if((clientSocket = accept(serverSock, (struct sockaddr *) &echoClientAddr, &clientLength)) < 0)
+            DieWithError("accept() falied()");
+
+        printf("Handling client %s\n", inet_ntoa(echoClientAddr.sin_addr));
+
+        HandleTCPClient(clientSock);
     }
-}
-
-void HandleTCPClient(int clntSocket)
-{
-    char buffer[BUFSIZE];
-
-    ssize_t numBytesRcvd = recv(clntSocket, buffer, BUFSIZE, 0);
-    if(numBytesRcvd<0)
-        DieWithSystemMessage("recv() failed");
-
-    while(numBytesRcvd>0)
-    {
-        ssize_t numBytesSent = send(clntSocket, buffer, numBytesRcvd, 0);
-        if(numBytesSent<0)
-            DieWithSystemMessage("send() falied");
-        else if(numBytesSent!=numBytesRcvd)
-            DieWithUserMessage("send()", "sent unexpected number of bytes");
-
-        numBytesRcvd = recv(clntSocket, buffer, BUFSIZE, 0);
-        if(numBytesRcvd<0)
-            DieWithSystemMessage("recv() falied");
-    }
-
-    close(clntSocket);
 }

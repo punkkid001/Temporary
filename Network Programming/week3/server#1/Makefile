@@ -1,5 +1,5 @@
 SOURCES=$(shell find . -type f -iname '*.c')
-TARGET=201511304.out
+TARGET=201511304_server.out
 
 all: $(TARGET)
 

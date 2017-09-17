@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
         DieWithError("send() sent a different number of bytes than expected");
 
     totalBytesReceived = 0;
-    printf("Received: ");
+    printf("[Client]Received: ");
     while (totalBytesReceived < echoStringLength)
     {
         if ((bytesReceived = recv(sock, echoBuffer, RCVBUFSIZE - 1, 0)) <= 0)

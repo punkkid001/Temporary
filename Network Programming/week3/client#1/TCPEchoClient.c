@@ -6,7 +6,7 @@
 #include<sys/socket.h>
 #include<arpa/inet.h>
 
-#define RCVBUFSIZE 32
+#define RCVBUFSIZE 1024
 
 void DieWithError(char *errorMessage);
 
@@ -52,10 +52,10 @@ int main(int argc, char *argv[])
         DieWithError("send() sent a different number of bytes than expected");
 
     totalBytesReceived = 0;
-    printf("Received: ");
+    printf("[Client]Received: ");
     while (totalBytesReceived < echoStringLength)
     {
-        if ((bytesReceived = recv(sock, echoBuffer, RCVBUFSIZE - 1, 0)) <= 0)
+        if ((bytesReceived = recv(sock, echoBuffer, RCVBUFSIZE, 0)) <= 0)
             DieWithError("recv() failed or connection closed prematurely");
         totalBytesReceived += bytesReceived;
         echoBuffer[bytesReceived] = '\0';

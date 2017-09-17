@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         if((clientSocket = accept(serverSocket, (struct sockaddr *) &echoClientAddr, &clientLength)) < 0)
             DieWithError("accept() falied()");
 
-        printf("Handling client %s\n", inet_ntoa(echoClientAddr.sin_addr));
+        printf("[Server]Handling client %s\n", inet_ntoa(echoClientAddr.sin_addr));
 
         HandleTCPClient(clientSocket);
     }

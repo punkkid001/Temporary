@@ -3,6 +3,7 @@
 #include<unistd.h>
 #include<sys/socket.h>
 
+// 조금 더 긴 메시지 수신을 위하여 buffer 크기를 늘렸습니다.
 #define RCVBUFSIZE 1024
 
 void DieWithError(char *errorMessage);
@@ -13,7 +14,7 @@ void HandleTCPClient(int clientSocket)
     char echoBuffer[RCVBUFSIZE];
     int receiveMsgSize;
 
-    memset(echoBuffer, '\0', RCVBUFSIZE);
+    memset(echoBuffer, '\0', RCVBUFSIZE);    // null 문자로 배열 초기화
 
     if ((receiveMsgSize = recv(clientSocket, echoBuffer, RCVBUFSIZE, 0)) < 0)
         DieWithError("recv() failed");
@@ -27,6 +28,6 @@ void HandleTCPClient(int clientSocket)
             DieWithError("recv() failed");
     }
     
-    EchoLog(echoBuffer);
+    EchoLog(echoBuffer);    // Echo log 출력 및 저장
     close(clientSocket);
 }

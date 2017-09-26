@@ -52,15 +52,12 @@ int main(int argc, char *argv[])
         if ((receiveMsgSize = recv(clientSocket, msgBuffer, 1024, 0)) < 0)
             DieWithError("recv() failed");
 
-        printf("first hello\n");
         if (!strcmp("hello", msgBuffer))
         {
-            printf("second hello\n");
             printf("MSG<- %s\n", msgBuffer);
             if (send(clientSocket, "hi", 3, 0) != 3)
                 DieWithError("send() failed");
             printf("MSG-> %s\n", "hi");
-            printf("last hello\n");
         }
 
         HandleTCPClient(clientSocket);

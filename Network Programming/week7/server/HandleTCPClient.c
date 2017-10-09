@@ -1,7 +1,10 @@
 #include<stdio.h>
 #include<string.h>
 #include<unistd.h>
+#include<dirent.h>
+
 #include<sys/socket.h>
+#include<sys/types.h>
 
 // 조금 더 긴 메시지 수신을 위하여 buffer 크기를 늘렸습니다.
 #define RCVBUFSIZE 1024
@@ -15,7 +18,7 @@
 
 
 void DieWithError(char *errorMessage);
-void EchoLog(char *msg);
+int FileList(char *fileList);
 
 void HandleTCPClient(int clientSocket)
 {
@@ -39,6 +42,9 @@ void HandleTCPClient(int clientSocket)
             fileName[receiveMsgSize] = '\0';
 
             printf("file name: %s\n", fileName);
+            
+            msgType = FileAck;
+            send(clientSocket, &msgType, 1, 0);
         }
 
         else if (msgType == EchoReq)
@@ -56,10 +62,48 @@ void HandleTCPClient(int clientSocket)
             puts(echoBuffer);
         }
 
+        else if (msgType == FileListReq)
+        {
+            char fileList[RCVBUFSIZE] = {'\0', };
+            int fileSize = FileList(fileList);
+            printf("file size: %d\n", fileSize);
+            
+            // Send file size
+            send(clientSocket, &fileSize, strlen(fileSize), 0);
+            // Send file List
+            send(clientSocket, fileList, strlen(fileList), 0);
+            printf("send file list\n");
+        }
+
         msgType = '\0';
         recv(clientSocket, &msgType, 1, 0);
     }
 
     close(clientSocket);
     exit(0);
+}
+
+int FileList(char *fileList)
+{
+    DIR *dir = opendir("./");
+    struct dirent *ent;
+
+    if (dir != NULL)
+    {
+        while((ent=readdir(dir)) != NULL)
+        {
+            strcat(fileList, ent->d_name);
+            strcat(fileList, "\n");
+        }
+        strcat(fileList, "\0");
+        closedir(dir);
+    }
+
+    else
+    {
+        printf("Cannot open directory!\n");
+        exit(-1);
+    }
+
+    return strlen(fileList);
 }

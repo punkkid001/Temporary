@@ -54,7 +54,6 @@ int main(int argc, char *argv[])
     // Input Operations
     while (1)
     {
-        fseek(stdin, 0, SEEK_END);
         printf("FTP command [p)ut g)et l)s r)ls e)xit] -> ");
         scanf(" %c", &command);
         
@@ -68,7 +67,17 @@ int main(int argc, char *argv[])
             scanf("%s", file_name);
 
             send(sock, file_name, strlen(file_name), 0);
-            //upload file function
+            bytesReceived = recv(sock, &msgType, 1, 0);
+
+            if (msgType == FileAck)
+            {
+                printf("Sending => ");
+                printf("\n");
+                //upload file function
+            }
+
+            else
+                continue;
         }
 
         else if (command == 'g')
@@ -88,7 +97,20 @@ int main(int argc, char *argv[])
         else if (command == 'l')
         {
             msgType = FileListReq;
-            //send(sock, &msgType, 1, 0);
+            send(sock, &msgType, 1, 0);
+
+            char fileList[RCVBUFSIZE] = {'\0', };
+            int fileSize = 0;
+            
+            // Receive file size
+            bytesReceived = recv(sock, &fileSize, strlen(fileSize), 0);
+            printf("filesize: %d\n", fileSize);
+
+            // Receive file name
+            bytesReceived = recv(sock, fileList, fileSize, 0);
+            fileList[bytesReceived] = '\0';
+            printf("**** Server File List ****\n");
+            puts(fileList);
             // ls (get list of files)
             //receive file list from server
         }

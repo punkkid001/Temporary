@@ -16,10 +16,10 @@ int main(int argc, char *argv[])
     int serverSocket;
     int clientSocket;
 
-    struct sockaddr_in echoServerAddr;
-    struct sockaddr_in echoClientAddr;
+    struct sockaddr_in serverAddr;
+    struct sockaddr_in clientAddr;
     
-    unsigned short echoServerPort;
+    unsigned short serverPort;
     unsigned int clientLength;
 
     if (argc != 2)
@@ -28,17 +28,18 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    echoServerPort = atoi(argv[1]);
+    serverPort = atoi(argv[1]);
 
+    // Init Socket
     if ((serverSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
         DieWithError("socket() falied");
 
-    memset(&echoServerAddr, 0, sizeof(echoServerAddr));
-    echoServerAddr.sin_family = AF_INET;
-    echoServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    echoServerAddr.sin_port = htons(echoServerPort);
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serverAddr.sin_port = htons(serverPort);
 
-    if (bind(serverSocket, (struct sockaddr *) &echoServerAddr, sizeof(echoServerAddr)) < 0)
+    if (bind(serverSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0)
         DieWithError("bind() falied");
 
     if (listen(serverSocket, MAXPENDING) < 0)
@@ -46,12 +47,12 @@ int main(int argc, char *argv[])
 
     while(1)
     {
-        clientLength = sizeof(echoClientAddr);
+        clientLength = sizeof(clientAddr);
 
-        if((clientSocket = accept(serverSocket, (struct sockaddr *) &echoClientAddr, &clientLength)) < 0)
+        if((clientSocket = accept(serverSocket, (struct sockaddr *) &clientAddr, &clientLength)) < 0)
             DieWithError("accept() falied()");
 
-        printf("[Server]Handling client %s\n", inet_ntoa(echoClientAddr.sin_addr));
+        printf("[Server]Handling client %s\n", inet_ntoa(clientAddr.sin_addr));
 
         HandleTCPClient(clientSocket);
     }

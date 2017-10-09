@@ -47,10 +47,10 @@ int main(int argc, char *argv[])
 
     totalBytesReceived = 0;
 
-    printf("MSG<- ");
     if ((bytesReceived = recv(sock, echoBuffer, RCVBUFSIZE, 0)) <= 0)
         DieWithError("recv() falied or connection closed prematurely");
     totalBytesReceived += bytesReceived;
+    printf("MSG<- ");
     printf(echoBuffer);
     printf("\n");
 
@@ -62,14 +62,11 @@ int main(int argc, char *argv[])
         echoStringLength = strlen(echoBuffer);
         totalBytesReceived = 0;
         
-        //printf("MSG<- ");
         while (totalBytesReceived < echoStringLength)
         {
-            memset(echoBuffer, '\0', RCVBUFSIZE);
             if ((bytesReceived = recv(sock, echoBuffer, RCVBUFSIZE, 0)) <= 0)
                 DieWithError("recv() failed or connection closed prematurely");
             totalBytesReceived += bytesReceived;
-            //printf(echoBuffer);
         }
         printf("MSG<- ");
         printf(echoBuffer);

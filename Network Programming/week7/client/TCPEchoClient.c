@@ -49,12 +49,14 @@ int main(int argc, char *argv[])
     if (connect(sock, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0)
         DieWithError("connect() failed");
 
+    printf("Welcome to Socket FT client!\n");
+
     // Input Operations
     while (1)
     {
-        printf("Welcome to Socket FT client!\n");
+        fseek(stdin, 0, SEEK_END);
         printf("FTP command [p)ut g)et l)s r)ls e)xit] -> ");
-        scanf("%c", &command);
+        scanf(" %c", &command);
         
         if (command == 'p')
         {

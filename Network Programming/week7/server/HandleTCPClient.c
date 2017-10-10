@@ -41,7 +41,10 @@ void HandleTCPClient(int clientSocket)
 
         if (msgType == FileUpReq)
         {
-            char fileName[100] = {'\0', };
+            char fileName[BUFSIZ] = {'\0', };
+            char fileSize[BUFSIZ];
+            unsigned char buf[BUFSIZ];
+
             receiveMsgSize = recv(clientSocket, fileName, sizeof(fileName), 0);
             fileName[receiveMsgSize] = '\0';
 
@@ -49,6 +52,25 @@ void HandleTCPClient(int clientSocket)
             
             msgType = FileAck;
             send(clientSocket, &msgType, 1, 0);
+
+            receiveMsgSize = recv(clientSocket, fileSize, sizeof(fileSize), 0);
+            fileSize[receiveMsgSize] = '\0';
+
+            receiveMsgSize = atoi(fileSize);
+            receiveMsgSize = receiveMsgSize / BUFSIZ + (receiveMsgSize % BUFSIZ ? 1 : 0);
+
+            send(clientSocket, &msgType, 1, 0);
+            
+            FILE *fp = fopen(fileName, "wb");
+
+            while(receiveMsgSize--)
+            {
+                int bufLen = 0;
+                bufLen = recv(clientSocket, buf, sizeof(buf), 0);
+                fwrite(buf, 1, bufLen, fp);
+
+                send(clientSocket, &msgType, 1, 0);
+            }
         }
 
         else if (msgType == FileDownReq)

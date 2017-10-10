@@ -5,6 +5,7 @@
 
 #include<sys/socket.h>
 #include<arpa/inet.h>
+#include<sys/stat.h>
 
 #define RCVBUFSIZE 1024
 #define EchoReq 01
@@ -64,22 +65,31 @@ int main(int argc, char *argv[])
             msgType = FileUpReq;
             send(sock, &msgType, 1, 0);
             // put file (upload file)
-            char file_name[100] = {'\0', };
+            char file_name[BUFSIZ] = {'\0', };
+            char file_size[BUFSIZ];
+            unsigned char ack;
             printf("Filename to put to server -> ");
             scanf("%s", file_name);
 
             send(sock, file_name, strlen(file_name), 0);
             bytesReceived = recv(sock, &msgType, 1, 0);
 
-            if (msgType == FileAck)
-            {
-                printf("Sending => ");
-                printf("\n");
-                //upload file function
-            }
+            struct stat fStat;
+            FILE *fp = fopen(file_name, "rb");
+            fstat(fileno(fp), &fStat);
+            sprintf(file_size, "%ld", fStat.st_size);
+            send(sock, file_size, strlen(file_size), 0);
 
-            else
-                continue;
+            recv(sock, &ack, 1, 0);
+
+            while(!feof(fp))
+            {
+                unsigned char buf[BUFSIZ];
+                size_t bufLen = fread(buf, 1, sizeof(buf), fp);
+                send(sock, buf, bufLen, 0);
+                recv(sock, &ack, 1, 0);
+                printf("#");
+            }
         }
 
         else if (command == 'g')

@@ -22,7 +22,7 @@
 
 
 void DieWithError(char *errorMessage);
-int FileList(char *fileList);
+void FileList(char *fileList);
 
 void HandleTCPClient(int clientSocket)
 {
@@ -32,13 +32,8 @@ void HandleTCPClient(int clientSocket)
 
     memset(msg, '\0', RCVBUFSIZE);    // null 문자로 배열 초기화
 
-    //if ((receiveMsgSize = recv(clientSocket, msg, RCVBUFSIZE, 0)) < 0)
-    //    DieWithError("recv() failed");
-
     while (msgType != Exit)
     {
-        //recv(clientSocket, &msgType, 1, 0);
-
         if (msgType == FileUpReq)
         {
             char fileName[BUFSIZ] = {'\0', };
@@ -48,7 +43,7 @@ void HandleTCPClient(int clientSocket)
             receiveMsgSize = recv(clientSocket, fileName, sizeof(fileName), 0);
             fileName[receiveMsgSize] = '\0';
 
-            printf("file name: %s\n", fileName);
+            printf("File upload: %s\n", fileName);
             
             msgType = FileAck;
             send(clientSocket, &msgType, 1, 0);
@@ -57,9 +52,11 @@ void HandleTCPClient(int clientSocket)
             fileSize[receiveMsgSize] = '\0';
 
             receiveMsgSize = atoi(fileSize);
+
             receiveMsgSize = receiveMsgSize / BUFSIZ + (receiveMsgSize % BUFSIZ ? 1 : 0);
 
-            send(clientSocket, &msgType, 1, 0);
+            buf[0] = 1;
+            send(clientSocket, buf, 1, 0);
             
             FILE *fp = fopen(fileName, "wb");
 
@@ -69,8 +66,11 @@ void HandleTCPClient(int clientSocket)
                 bufLen = recv(clientSocket, buf, sizeof(buf), 0);
                 fwrite(buf, 1, bufLen, fp);
 
-                send(clientSocket, &msgType, 1, 0);
+                buf[0] = 1;
+                send(clientSocket, buf, 1, 0);
             }
+
+            printf("File upload (%s) DONE\n", fileName);
         }
 
         else if (msgType == FileDownReq)
@@ -83,7 +83,7 @@ void HandleTCPClient(int clientSocket)
 
             receiveMsgSize = recv(clientSocket, fileName, sizeof(fileName), 0);
             fileName[receiveMsgSize] = '\0';
-            printf("RECV(%s)\n", fileName);
+            //printf("RECV(%s)\n", fileName);
 
             fp = fopen(fileName, "rb");
             fstat(fileno(fp), &fStat);
@@ -93,15 +93,19 @@ void HandleTCPClient(int clientSocket)
             // ACK get
             recv(clientSocket, &ack, 1, 0);
 
+            printf("File download: %s\n", fileName);
+
             while(!feof(fp)) {
                 unsigned char buf[BUFSIZ];
                 size_t bufLen = fread(buf, 1, sizeof(buf), fp);
-                printf("SEND %lu bytes\n", bufLen);
+                //printf("SEND %lu bytes\n", bufLen);
                 send(clientSocket, buf, bufLen, 0);
 
                 // ACK get
                 recv(clientSocket, &ack, 1, 0);
             }
+
+            printf("File download (%s) DONE\n", fileName);
         }
 
         else if (msgType == EchoReq)
@@ -126,7 +130,7 @@ void HandleTCPClient(int clientSocket)
 
             // Send file List
             send(clientSocket, fileList, strlen(fileList), 0);
-            printf("send file list\n");
+            printf("Send server file list\n");
         }
 
         msgType = '\0';
@@ -137,7 +141,7 @@ void HandleTCPClient(int clientSocket)
     exit(0);
 }
 
-int FileList(char *fileList)
+void FileList(char *fileList)
 {
     DIR *dir = opendir("./");
     struct dirent *ent;
@@ -158,6 +162,4 @@ int FileList(char *fileList)
         printf("Cannot open directory!\n");
         exit(-1);
     }
-
-    return strlen(fileList);
 }

@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<unistd.h>
+#include<dirent.h>
 
 #include<sys/socket.h>
 #include<arpa/inet.h>
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
     // Input Operations
     while (1)
     {
-        printf("FTP command [p)ut g)et l)s r)ls e)xit] -> ");
+        printf("FTP command [p)ut g)et l)s r)ls c)echo e)xit] -> ");
         scanf(" %c", &command);
         
         if (command == 'p')
@@ -72,7 +73,7 @@ int main(int argc, char *argv[])
             scanf("%s", file_name);
 
             send(sock, file_name, strlen(file_name), 0);
-            bytesReceived = recv(sock, &msgType, 1, 0);
+            bytesReceived = recv(sock, &ack, 1, 0);
 
             struct stat fStat;
             FILE *fp = fopen(file_name, "rb");
@@ -82,14 +83,19 @@ int main(int argc, char *argv[])
 
             recv(sock, &ack, 1, 0);
 
+            printf("Sending =>");
             while(!feof(fp))
             {
                 unsigned char buf[BUFSIZ];
                 size_t bufLen = fread(buf, 1, sizeof(buf), fp);
                 send(sock, buf, bufLen, 0);
-                recv(sock, &ack, 1, 0);
                 printf("#");
+                recv(sock, &ack, 1, 0);
+
             }
+            printf("\n");
+
+            printf("%s (%s bytes) uploading success to %s\n", file_name, file_size, serverIP);
         }
 
         else if (command == 'g')
@@ -114,20 +120,25 @@ int main(int argc, char *argv[])
             send(sock, buf, 1, 0);
             FILE *fp = fopen(file_name, "wb");
 
+            printf("Receive File =>");
             while(bytesReceived--)
             {
-                printf("RECV(%04d)\n", bytesReceived);
+                //printf("RECV(%04d)\n", bytesReceived);
                 int bufLen = 0;
                 bufLen = recv(sock, buf, sizeof(buf), 0);
-                printf("RECV DONE(%04d)\n", bytesReceived);
+                //printf("RECV DONE(%04d)\n", bytesReceived);
                 fwrite(buf, 1, bufLen, fp);
+
+                printf("#");
 
                 // ACK
                 buf[0] = 1;
                 send(sock, buf, 1, 0);
             }
+            printf("\n");
 
             //download file function
+            printf("%s (%s bytes) downloading success from %s\n", file_name, file_size, serverIP);
         }
     
         else if (command == 'l')
@@ -139,7 +150,6 @@ int main(int argc, char *argv[])
 
             // Receive file name
             bytesReceived = recv(sock, fileList, sizeof(fileList), 0);
-            printf("%d\n", bytesReceived);
             fileList[bytesReceived] = '\0';
             printf("**** Server File List ****\n");
             puts(fileList);
@@ -147,7 +157,7 @@ int main(int argc, char *argv[])
             //receive file list from server
         }
 
-        else if (command == 'r')
+        else if (command == 'c')
         {
             msgType = EchoReq;
             send(sock, &msgType, 1, 0);
@@ -164,6 +174,23 @@ int main(int argc, char *argv[])
             puts(echoBuffer);
             printf("\n");
             // rls
+        }
+
+        else if (command == 'r')
+        {
+            DIR *dir = opendir("./");
+            struct dirent *ent;
+
+            if (dir != NULL)
+            {
+                printf("**** Client File List ****\n");
+                while((ent=readdir(dir)) != NULL)
+                    printf("%s\n", ent->d_name);
+                closedir(dir);
+            }
+
+            else
+                printf("Cannot open directory!\n");
         }
 
         else if (command == 'e')

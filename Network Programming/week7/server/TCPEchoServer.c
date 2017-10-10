@@ -45,6 +45,8 @@ int main(int argc, char *argv[])
     if (listen(serverSocket, MAXPENDING) < 0)
         DieWithError("listen() falied");
 
+    printf("Server Start!\n");
+
     while(1)
     {
         clientLength = sizeof(clientAddr);

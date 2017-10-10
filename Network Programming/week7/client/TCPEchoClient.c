@@ -14,6 +14,8 @@
 #define FileListReq 03
 #define FileListRes 13
 #define Exit 04
+#define FileDownReq 05
+#define FileDownRes 06
 
 
 void DieWithError(char *errorMessage);
@@ -82,15 +84,39 @@ int main(int argc, char *argv[])
 
         else if (command == 'g')
         {
-            msgType = FileAck;
+            msgType = FileDownReq;
             send(sock, &msgType, 1, 0);
             // get file (download file)
-            char file_name[100] = {'\0', };
+            char file_name[BUFSIZ] = {'\0', };
+            char file_size[BUFSIZ];
+            unsigned char buf[BUFSIZ];
             printf("Filename to get from server -> ");
             scanf("%s", file_name);
-
             send(sock, file_name, strlen(file_name), 0);
-            
+
+            bytesReceived = recv(sock, file_size, sizeof(file_size), 0);
+            file_size[bytesReceived] = '\0';
+            bytesReceived = atoi(file_size);
+            bytesReceived = bytesReceived / BUFSIZ + (bytesReceived % BUFSIZ ? 1 : 0);
+
+            // ACK
+            buf[0] = 1;
+            send(sock, buf, 1, 0);
+            FILE *fp = fopen(file_name, "wb");
+
+            while(bytesReceived--)
+            {
+                printf("RECV(%04d)\n", bytesReceived);
+                int bufLen = 0;
+                bufLen = recv(sock, buf, sizeof(buf), 0);
+                printf("RECV DONE(%04d)\n", bytesReceived);
+                fwrite(buf, 1, bufLen, fp);
+
+                // ACK
+                buf[0] = 1;
+                send(sock, buf, 1, 0);
+            }
+
             //download file function
         }
     
@@ -100,14 +126,10 @@ int main(int argc, char *argv[])
             send(sock, &msgType, 1, 0);
 
             char fileList[RCVBUFSIZE] = {'\0', };
-            int fileSize = 0;
-            
-            // Receive file size
-            bytesReceived = recv(sock, &fileSize, strlen(fileSize), 0);
-            printf("filesize: %d\n", fileSize);
 
             // Receive file name
-            bytesReceived = recv(sock, fileList, fileSize, 0);
+            bytesReceived = recv(sock, fileList, sizeof(fileList), 0);
+            printf("%d\n", bytesReceived);
             fileList[bytesReceived] = '\0';
             printf("**** Server File List ****\n");
             puts(fileList);
@@ -125,7 +147,7 @@ int main(int argc, char *argv[])
             scanf("%s", echoBuffer);
             
             send(sock, &echoBuffer, strlen(echoBuffer), 0);
-            bytesReceived = recv(sock, &echoBuffer, strlen(echoBuffer), 0);
+            bytesReceived = recv(sock, &echoBuffer, sizeof(echoBuffer), 0);
             
             echoBuffer[bytesReceived] = '\0';
             printf("Echo Msg <- ");

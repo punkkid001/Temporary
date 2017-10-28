@@ -14,22 +14,20 @@ int main(int argc, char *argv[])
     struct sockaddr_in echoServerAddr;
     unsigned short echoServerPort;
     char *serverIP;
-    char *echoString;
     char echoBuffer[BUFSIZ];
     unsigned int echoStringLength;
     int byteReceived, totalByteReceived;
 
-    if ((argc < 3) || (argc > 4))
+    if ((argc < 2) || (argc > 3))
     {
-        fprintf(stderr, "Usage: %s <server IP> <Echo Word> [<Echo Port>]\n", argv[0]);
+        fprintf(stderr, "Usage: %s <server IP> [<Echo Port>]\n", argv[0]);
         exit(1);
     }
 
     serverIP = argv[1];
-    echoString = argv[2];
 
-    if (argv == 4)
-        echoServerPort = atoi(argv[3]);
+    if (argc == 3)
+        echoServerPort = atoi(argv[2]);
     else
         echoServerPort = 7;
 
@@ -46,21 +44,28 @@ int main(int argc, char *argv[])
 
     echoStringLength = strlen(echoString);
 
-    if (send(sock, echoString, echoStringLength, 0) != echoStringLength)
-        DieWithError("send() sent a different number of bytes than expected");
-
-    totalBytesReceived = 0;
-    printf("[Client]Received: ");
-    while (totalBytesReceived < echoStringLength)
+    while (strcmp("/quit", echoBuffer))
     {
-        if ((bytesReceived = recv(sock, echoBuffer, BUFSIZ, 0)) <= 0)
-            DieWithError("recv() failed or connectio closed prematurely");
-        totalBytesReceived += bytesReceived;
-        echoBuffer[bytesReceived] = '\0';
+        memset(echoBuffer, '\0', BUFSIZ);
+        printf("MSG-> ");
+        scanf("%s", echoBuffer);
+
+        if (send(sock, echoBuffer, strlen(echoBuffer), 0) != strlen(echoBuffer))
+            DieWithError("send() sent a different number of bytes than expected");
+
+        totalByteReceived = 0;
+        while (totalByteReceived < echoStringLength)
+        {
+            if ((byteReceived = recv(sock, echoBuffer, sizeof(echoBuffer), 0)) <= 0)
+                DieWithError("recv() failed or connection closed prematurely");
+            totalByteReceived += bytesReceived;
+        }
+
+        printf("MSG<- ");
         printf(echoBuffer);
+        printf("\n");
     }
 
-    printf("\n");
     close(sock);
-    exit(0);
+    return 0;
 }

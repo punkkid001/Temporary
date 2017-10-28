@@ -55,7 +55,9 @@ int main(int argc, char *argv[])
             DieWithError("accept() failed()");
 
         printf("[Server]Handling Client %s\n", inet_ntoa(echoClientAddr.sin_addr));
-
         HandleTCPClient(clientSocket);
     }
+
+    close(clientSocket);
+    return 0;
 }

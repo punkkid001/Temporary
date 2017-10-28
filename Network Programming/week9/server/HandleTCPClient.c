@@ -9,17 +9,23 @@ void HandleTCPClient(int clinetSocket)
     char echoBuffer[BUFSIZ];
     int receiveMsgSize;
 
-    if ((receiveMsgSize = recv(clientSocket, echoBuffer, BUFSIZ, 0)) < 0)
+    memset(echoBuffer, '\0', BUFSIZ);
+
+    if ((receiveMsgSize = recv(clientSocket, echoBuffer, sizeof(echoBuffer), 0)) < 0)
         DieWithError("recv() failed");
 
-    while (receiveMsgSize > 0)
+    while (strcmp("/quit", echoBuffer))
     {
-        if (send(clientSocket, echoBuffer, receiveMsgSize, 0) != receiveMsgSize)
+        printf("MSG-> ");
+        if (send(clientSocket, echoBuffer, strlen(echoBuffer), 0) != receiveMsgSize)
             DieWithError("send() failed");
+        printf(echoBuffer);
+        printf("\n");
 
-        if ((receiveMsgSize = recv(clientSocket, echoBuffer, BUFSIZ, 0)) < 0)
+        printf("MSG<- ");
+        if ((receiveMsgSize = recv(clientSocket, echoBuffer, sizeof(echoBuffer), 0)) < 0)
             DieWithError("recv() failed");
+        printf(echoBuffer);
+        printf("\n");
     }
-
-    close(clientSocket);
 }

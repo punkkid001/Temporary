@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-void DieWitherror(char *errorMessage)
+void DieWithError(char *errorMessage)
 {
     perror(errorMessage);
     exit(1);

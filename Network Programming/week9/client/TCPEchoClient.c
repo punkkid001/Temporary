@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     unsigned short echoServerPort;
     char *serverIP;
     char echoBuffer[BUFSIZ];
-    unsigned int echoStringLength;
+    int echoStringLength;
     int byteReceived, totalByteReceived;
 
     if ((argc < 2) || (argc > 3))
@@ -42,15 +42,14 @@ int main(int argc, char *argv[])
     if (connect(sock, (struct sockaddr *)&echoServerAddr, sizeof(echoServerAddr)) < 0)
         DieWithError("connect() failed");
 
-    echoStringLength = strlen(echoString);
-
     while (strcmp("/quit", echoBuffer))
     {
         memset(echoBuffer, '\0', BUFSIZ);
         printf("MSG-> ");
         scanf("%s", echoBuffer);
 
-        if (send(sock, echoBuffer, strlen(echoBuffer), 0) != strlen(echoBuffer))
+        echoStringLength = strlen(echoBuffer);
+        if (send(sock, echoBuffer, strlen(echoBuffer), 0) != echoStringLength)
             DieWithError("send() sent a different number of bytes than expected");
 
         totalByteReceived = 0;
@@ -58,7 +57,7 @@ int main(int argc, char *argv[])
         {
             if ((byteReceived = recv(sock, echoBuffer, sizeof(echoBuffer), 0)) <= 0)
                 DieWithError("recv() failed or connection closed prematurely");
-            totalByteReceived += bytesReceived;
+            totalByteReceived += byteReceived;
         }
 
         printf("MSG<- ");

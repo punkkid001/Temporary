@@ -16,13 +16,13 @@ void HandleTCPClient(int clientSocket)
     {
         memset(echoBuffer, '\0', BUFSIZ);
 
-        printf("MSG<- ");
+        puts("MSG<- ");
         if ((receiveMsgSize = recv(clientSocket, echoBuffer, sizeof(echoBuffer), 0)) < 0)
             DieWithError("recv() failed");
         printf(echoBuffer);
         printf("\n");
 
-        printf("MSG-> ");
+        puts("MSG-> ");
         if (send(clientSocket, echoBuffer, strlen(echoBuffer), 0) != receiveMsgSize)
             DieWithError("send() failed");
         printf(echoBuffer);

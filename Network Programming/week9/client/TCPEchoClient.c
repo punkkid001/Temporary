@@ -52,13 +52,17 @@ int main(int argc, char *argv[])
         if (send(sock, echoBuffer, strlen(echoBuffer), 0) != echoStringLength)
             DieWithError("send() sent a different number of bytes than expected");
 
+        /*
         totalByteReceived = 0;
         while (totalByteReceived < echoStringLength)
         {
             if ((byteReceived = recv(sock, echoBuffer, sizeof(echoBuffer), 0)) <= 0)
                 DieWithError("recv() failed or connection closed prematurely");
             totalByteReceived += byteReceived;
-        }
+        }*/
+
+        if (recv(sock, echoBuffer, sizeof(echoBuffer), 0) <= 0)
+            DieWithError("recv() failed or connection closed prematurely");
 
         printf("MSG<- ");
         printf(echoBuffer);

@@ -4,7 +4,6 @@
 #include<unistd.h>
 #include<pthread.h>
 
-#define MAXPENDING 5
 
 void DieWithError(char *errorMessage);
 int SetupTCPServerSocket(char* port);
@@ -38,7 +37,7 @@ int main(int argc, char *argv[])
         threadArgs->clientSocket = clientSocket;
 
         pthread_t tid;
-        int returnValue = pthread_create(&tid, NULL, ThreadMain, threadArgs);
+        int returnValue = pthread_create(&tid, NULL, ThreadMain, (void*)threadArgs);
         if (returnValue != 0)
             DieWithError("pthread_create() failed");
     }
@@ -51,8 +50,9 @@ void *ThreadMain(void *threadArgs)
     pthread_detach(pthread_self());
 
     int clientSocket = ((struct ThreadArgs*)threadArgs)->clientSocket;
-    free(threadArgs);
+    //free(threadArgs);
 
     HandleTCPClient(clientSocket);
+    free(threadArgs);
     return (NULL);
 }

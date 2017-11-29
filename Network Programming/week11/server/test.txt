@@ -1,0 +1,6 @@
+<< google
+>> asdfa
+<< asdfasdf
+>> /quit
+<< /quit
+>> /quit

@@ -16,7 +16,7 @@ void HandleTCPClient(int client_socket)
 {
     char command[BUFSIZ] = {'\0', };
     int receive_msg_size;
-
+    FILE *log;
 
     while (strcmp("/quit", command))
     {
@@ -129,7 +129,7 @@ void HandleTCPClient(int client_socket)
             if ((receive_msg_size = recv(client_socket, file_name, sizeof(file_name), 0)) < 0)
                 DieWithError("recv() failed");
 
-            FILE *fp = fopen(file_name, "wb");
+            log = fopen(file_name, "wb");
 
             // Send ok sign (ACK)
             send(client_socket, "ACK", 4, 0);
@@ -141,55 +141,43 @@ void HandleTCPClient(int client_socket)
                 recv(client_socket, chat_msg, sizeof(chat_msg), 0);
 
                 // Write log
-                fwrite(chat_msg, 1, strlen(chat_msg), fp);
+                fprintf(log, "<< %s\n", chat_msg);
+                printf("<< %s\n", chat_msg);
 
-                if (!strcmp(chat_msg, "/log"))
-                {
-                    printf("[MSG]Sending log...");
+                memset(my_msg, '\0', sizeof(my_msg));
+                printf(">> ");
+                scanf("%s", my_msg);
 
-                    char ack_sign[4] = {'\0', };
-                    char file_size[BUFSIZ] = {'\0', };
-                    struct stat f_stat;
-                    fclose(fp);
-                    fp = fopen(file_name, "rb");
-
-                    fstat(fileno(fp), &f_stat);
-                    sprintf(file_size, "%ld", f_stat.st_size);
-                    
-                    // Send a file size
-                    send(client_socket, file_size, strlen(file_size), 0);
-
-                    // Get ok sign (ACK)
-                    recv(client_socket, &ack_sign, 4, 0); 
-
-                    // Send a log file
-                    while (!feof(fp))
-                    {
-                        unsigned char file_data[BUFSIZ];
-                        size_t len = fread(file_data, 1, sizeof(file_data), fp);
-                        
-                        send(client_socket, file_data, len, 0);
-                        recv(client_socket, &ack_sign, 4, 0);
-                    }
-                    fclose(fp);
-                    fp = fopen(file_name, "wb");
-
-                    send(client_socket, "ACK", 4, 0);
-                }
-
-                else
-                {
-                    printf("<< %s\n", chat_msg);
-
-                    memset(my_msg, '\0', sizeof(my_msg));
-                    printf(">> ");
-                    scanf("%s", my_msg);
-
-                    send(client_socket, my_msg, strlen(my_msg), 0);
-                    fwrite(my_msg, 1, strlen(my_msg), fp);
-                }
+                send(client_socket, my_msg, strlen(my_msg), 0);
+                fprintf(log, ">> %s\n", my_msg);
             }
-            fclose(fp);
+            fclose(log);
+        }
+
+        else if (!strcmp(command, "/log"))
+        {
+            char file_name[BUFSIZ] = {'\0', };
+            char file_size[BUFSIZ] = {'\0', };
+            char ack_sign[4] = {'\0', };
+
+            send(client_socket, "ACK", 4, 0);
+            recv(client_socket, file_name, sizeof(file_name), 0);
+
+            FILE *fp = fopen(file_name, "rb");
+            struct stat f_stat;
+            fstat(fileno(fp), &f_stat);
+            sprintf(file_size, "%ld", f_stat.st_size);
+
+            send(client_socket, file_size, strlen(file_size), 0);
+            recv(client_socket, ack_sign, sizeof(ack_sign), 0);
+
+            while (!feof(fp))
+            {
+                unsigned char file_data[BUFSIZ];
+                size_t size = fread(file_data, 1, sizeof(file_data), fp);
+                send(client_socket, file_data, size, 0);
+                recv(client_socket, ack_sign, sizeof(ack_sign), 0);
+            }
         }
 
         else if (!strcmp(command, "/quit"))

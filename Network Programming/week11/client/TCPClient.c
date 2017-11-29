@@ -140,7 +140,6 @@ int main(int argc, char *argv[])
         {
             char chat_msg[BUFSIZ] = {'\0', };
             char my_msg[BUFSIZ] = {'\0', };
-            char file_name[BUFSIZ] = {'\0', };
             char ack_sign[4] = {'\0', };
 
             recv(sock, ack_sign, sizeof(ack_sign), 0);
@@ -159,37 +158,39 @@ int main(int argc, char *argv[])
                 scanf("%s", my_msg);
 
                 send(sock, my_msg, strlen(my_msg), 0);
-
-                if (!strcmp(my_msg, "/log"))
-                {
-                    char file_size[BUFSIZ] = {'\0', };
-
-                    // Get file size
-                    recv(sock, file_size, sizeof(file_size), 0);
-                    send(sock, "ACK", 4, 0);
-
-                    int size = atoi(file_size);
-                    size = size / BUFSIZ + (size % BUFSIZ ? 1 : 0);
-                    unsigned char file_data[BUFSIZ] = {'\0', };
-
-                    FILE *fp = fopen(file_name, "wb");
-                    while (size--)
-                    {
-                        int buf_len = 0;
-                        buf_len = recv(sock, file_data, sizeof(file_data), 0);
-                        fwrite(file_data, 1, buf_len, fp);
-                        
-                        send(sock, "ACK", 4, 0);
-                    }
-                }
-
-                else
-                {
-                    memset(chat_msg, '\0', sizeof(chat_msg));
-                    recv(sock, chat_msg, sizeof(chat_msg), 0);
-                    printf("<< %s\n", chat_msg);
-                }
+                memset(chat_msg, '\0', sizeof(chat_msg));
+                recv(sock, chat_msg, sizeof(chat_msg), 0);
+                printf("<< %s\n", chat_msg);
             }
+        }
+
+        else if (!strcmp(command, "/log"))
+        {
+            char ack_sign[BUFSIZ] = {'\0', };
+            char file_name[BUFSIZ] = {'\0', };
+            char file_size[BUFSIZ] = {'\0', };
+
+            recv(sock, ack_sign, sizeof(ack_sign), 0);
+
+            printf("log file name >> ");
+            scanf("%s", file_name);
+            send(sock, file_name, strlen(file_name), 0);
+
+            recv(sock, file_size, sizeof(file_size), 0);
+            int size = atoi(file_size);
+            size = size / BUFSIZ + (size % BUFSIZ ? 1 : 0);
+            unsigned char file_data[BUFSIZ] = {'\0', };
+            send(sock, "ACK", 4, 0);
+
+            FILE *fp = fopen(file_name, "wb");
+            while (size--)
+            {
+                int buf_len = 0;
+                buf_len = recv(sock, file_data, sizeof(file_data), 0);
+                fwrite(file_data, 1, buf_len, fp);
+                send(sock, "ACK", 4, 0);
+            }
+            fclose(fp);
         }
 
         else if (!strcmp(command, "/quit"))
